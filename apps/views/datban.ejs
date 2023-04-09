@@ -4,6 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css"
+    integrity="sha512-KfkfwYDsLkIlwQp6LFnl8zNdLGxu9YAA1QvwINks4PhcElQSvqcyVLLD9aMhXd13uQjoXtEKNosOWaZqXgel0g=="
+    crossorigin="anonymous" referrerpolicy="no-referrer">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sơ đồ bàn</title>
 </head>
@@ -16,8 +19,16 @@
     </div>
     <footer>
         <div class="left">
-            <button>Đặt bàn</button>
-            <button>Thông tin đặt</button>
+            <button onclick="Back()">Đặt bàn</button>
+            <button onclick="Click()">Thông tin đặt</button>
+        </div>
+        <div class="mid">
+            <div class="notBooked">
+                <i class="fa-solid fa-square"></i>
+                Chưa đặt</div>
+            <div class="Booked">
+                <i class="fa-solid fa-square"></i>
+                Đã đặt</div>
         </div>
         <div class="right">
             <button>In hóa đơn</button>
@@ -77,6 +88,13 @@
             display: flex;
         }
 
+        .notBooked i{
+            color: yellow;
+        }
+        .Booked i{
+            color: rgb(0, 159, 189);;
+        }
+
         button {
             height: 100%;
             width: 10rem;
@@ -109,8 +127,11 @@
     <script>
         var proApi = 'http://localhost:3000/orderTable/ViewAllTable';
         var Api = 'http://localhost:3000/home/getData';
+        var ApiStatus = 'http://localhost:3000/orderTable/checkStatus';
         var NT = document.getElementById("NT");
 
+
+        ///
         createPro()
         async function createPro() {
             var option = {
@@ -123,7 +144,13 @@
             }
             const response = await fetch(proApi, option);
             var data = await response.json();
-            console.log(data);
+
+            const response2 = await fetch(ApiStatus, option);
+            var data2 = await response2.json();
+            // for(var i = 0 ; i < data2.length ; i++){
+            //     console.log(data2[i].NameTable);
+
+            // }
             var htmlStr = "";
             // var htmlStr2 = "";
             for (var i = 0; i < data.length; i++) {
@@ -141,9 +168,21 @@
 
             }
             NT.innerHTML = htmlStr;
+            var tables = document.getElementsByClassName('table');
+            var titles = document.querySelectorAll('div.title');
+            //  console.log(titles)
+            for (var i = 0; i < tables.length; i++) {
+                for (var j = 0; j < data2.length; j++) {
+                    if (data2[j].NameTable == titles[i].outerText) {
+                         tables[i].style.backgroundColor = "#009FBD";
+                        //  console.log(data2[j].NameTable)
+                    }
+
+                }
+               
+            }
         }
         ///
-
         async function requestData(data) {
             var option = {
                 method: 'POST',
@@ -164,6 +203,74 @@
             }
             requestData(data)
         }
+
+        ///Status
+        function clickItem2(NameTable) {
+            var data = {
+                SoBan: NameTable,
+            }
+            requestData2(data)
+        }
+        var proApi3 = 'http://localhost:3000/Order/getNumberTable';
+
+        async function requestData2(data) {
+            var option = {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+
+            }
+            const response = await fetch(proApi3, option);
+            var logdata = await response.json();
+            console.log(logdata);
+            window.location = "http://localhost:3000/Order";
+        }
+
+        async function status() {
+            var option = {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify()
+
+            }
+            const response = await fetch(ApiStatus, option);
+            var data = await response.json();
+            console.log(data)
+            var htmlStr = "";
+            for (var i = 0; i < data.length; i++) {
+                htmlStr += `<div class="table" onclick="clickItem2('${data[i].NameTable}')">
+                <div class="title">
+                    <input class="title" name="NameTable"  data-id="${data[i].NameTable}" hidden>${data[i].NameTable}
+                </div>
+
+                <div class="descripstion">
+                    <input class="title" name="Position" data-id="${data[i].Price}" hidden>${data[i].Price}
+                </div>
+                <div class="descripstion">
+                    <input class="title" name="Position" data-id="${data[i].ManyPeople}" hidden>${data[i].ManyPeople}/Nguoi
+                </div>
+
+
+            </div>`;
+
+            }
+            NT.innerHTML = htmlStr;
+        }
+
+        function Click() {
+            status()
+        }
+        function Back() {
+            createPro()
+        }
+
+
+        var tables = document.querySelectorAll('.table')
+        console.log(tables)
     </script>
 
 </body>
